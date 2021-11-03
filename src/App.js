@@ -1,33 +1,65 @@
-import { useQuery, useMutation, useQueryClient } from "react-query";
-
-import logo from "./logo.svg";
+import { useQuery } from "react-query";
 import "./App.css";
-const getData = () =>
-  new Promise((resolve, reject) => {
-    resolve({ test: "hello" });
-  });
-function App() {
-  const queryClient = useQueryClient();
 
-  const query = useQuery("data", getData);
-  console.log(query);
+function App() {
+  const { isSuccess, data } = useQuery("data", () =>
+    fetch("https://intent-shad-91.hasura.app/v1/graphql", {
+      method: "POST",
+      body: JSON.stringify({
+        query: `
+      {
+        color {
+          color
+          complementary_colors {
+            color
+          }
+        }
+      }
+      `,
+      }),
+    })
+      .then((res) => res.json())
+      .then((res) => res.data)
+  );
+
+  console.log(data);
 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {isSuccess && (
+        <div>
+          {data.color.map((color, key) => {
+            return (
+              <div
+                style={{
+                  width: 100,
+                  height: 150,
+                  backgroundColor: color.color,
+                }}
+                key={key}
+              >
+                {color.color}
+                <div style={{ display: "flex" }}>
+                  {color.complementary_colors.map((color, key) => {
+                    return (
+                      <div
+                        key={key}
+                        style={{
+                          width: 33,
+                          height: 50,
+                          backgroundColor: color.color,
+                        }}
+                      >
+                        {color.color}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
