@@ -1,7 +1,17 @@
-import logo from './logo.svg';
-import './App.css';
+import { useQuery, useMutation, useQueryClient } from "react-query";
 
+import logo from "./logo.svg";
+import "./App.css";
+const getData = () =>
+  new Promise((resolve, reject) => {
+    resolve({ test: "hello" });
+  });
 function App() {
+  const queryClient = useQueryClient();
+
+  const query = useQuery("data", getData);
+  console.log(query);
+
   return (
     <div className="App">
       <header className="App-header">
