@@ -1,5 +1,6 @@
 import { useQuery } from "react-query";
-import "./App.css";
+import ColorChip from "./ColorChip";
+import ComplementaryColors from "./ComplementaryColors";
 
 function App() {
   const { isSuccess, data } = useQuery("data", () =>
@@ -22,39 +23,21 @@ function App() {
       .then((res) => res.data)
   );
 
-  console.log(data);
-
   return (
-    <div className="App">
+    <div>
       {isSuccess && (
-        <div>
-          {data.color.map((color, key) => {
+        <div className="grid grid-cols-4 gap-4">
+          {data.color.map(({ color, complementary_colors }, key) => {
             return (
               <div
-                style={{
-                  width: 100,
-                  height: 150,
-                  backgroundColor: color.color,
-                }}
+                className="w-full h-64 rounded-sm flex flex-wrap space-between"
                 key={key}
+                style={{ backgroundColor: color }}
               >
-                {color.color}
-                <div style={{ display: "flex" }}>
-                  {color.complementary_colors.map((color, key) => {
-                    return (
-                      <div
-                        key={key}
-                        style={{
-                          width: 33,
-                          height: 50,
-                          backgroundColor: color.color,
-                        }}
-                      >
-                        {color.color}
-                      </div>
-                    );
-                  })}
-                </div>
+                <ColorChip color={color} />
+                {complementary_colors && (
+                  <ComplementaryColors colors={complementary_colors} />
+                )}
               </div>
             );
           })}
