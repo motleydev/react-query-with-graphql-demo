@@ -1,18 +1,16 @@
-import {
-  NewProductsDocument,
-  Product,
-  ProductsQuery,
-} from "../../generated/graphql";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "react-query";
 
 const url = "ws://intent-shad-91.hasura.app/v1/graphql";
 
-export const useNewProductsSubscription = ({ welderId }) => {
+export const useColorSubscription = () => {
   const queryClient = useQueryClient();
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [isSubscribingSuccess, setIsSubscribingSuccess] = useState(false);
 
   useEffect(() => {
     const ws = new WebSocket(url, "graphql-ws");
+    setIsSubscribing(true);
 
     ws.onopen = () => {
       ws.send(JSON.stringify({ type: "connection_init", payload: {} }));
@@ -21,10 +19,17 @@ export const useNewProductsSubscription = ({ welderId }) => {
           id: "1",
           type: "start",
           payload: {
-            variables: { welderId: welderId },
+            // variables: {},
             extensions: {},
-            operationName: "NewProducts",
-            query: NewProductsDocument,
+            operationName: "GetColors",
+            query: `subscription GetColors {
+                color {
+                  color
+                  complementary_colors {
+                    color
+                  }
+                }
+              }`,
           },
         })
       );
@@ -33,24 +38,18 @@ export const useNewProductsSubscription = ({ welderId }) => {
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
 
-      if (msg.type == "data") {
-        const data = msg.payload.data.productAdded;
-        queryClient.setQueriesData <
-          ProductsQuery >
-          ("Products",
-          (oldData: ProductsQuery) => {
-            return {
-              ...oldData,
-              getLastProducts: [...oldData.getLastProducts, data],
-            };
-          });
+      if (msg.type === "data") {
+        setIsSubscribingSuccess(true);
+        setIsSubscribing(false);
+        const data = msg.payload.data.color;
+        queryClient.setQueriesData("colors", data);
       }
     };
 
     return () => {
-      // Unsubscribe before exit
       ws.send(JSON.stringify({ id: "1", type: "stop" }));
       ws.close();
     };
-  }, []);
+  }, [queryClient]);
+  return { isSubscribing, isSubscribingSuccess };
 };

@@ -1,0 +1,8 @@
+mutation InsertColorOne($hex: String) {
+  insert_color_one(object: { color: $hex }) {
+    color
+    complementary_colors {
+      color
+    }
+  }
+}

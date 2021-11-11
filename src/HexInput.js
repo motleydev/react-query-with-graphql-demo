@@ -1,5 +1,5 @@
 import React from "react";
-import { useMutation, useQueryClient } from "react-query";
+import { useInsertColorOneMutation } from "./generated/graphql";
 import ColorChip from "./ColorChip";
 import lightOrDark from "./utils/lightOrdark";
 
@@ -22,38 +22,7 @@ export default function HextInput() {
   const [error, setError] = React.useState("");
   const [brightness, setBrightness] = React.useState("");
 
-  const queryClient = useQueryClient();
-  const { isLoading, isError, isSuccess, data, mutate } = useMutation(
-    (hex) =>
-      fetch("https://intent-shad-91.hasura.app/v1/graphql", {
-        method: "POST",
-        body: JSON.stringify({
-          query: `
-        mutation InsertColorOne( $hex: String ){
-          insert_color_one(object: {color: $hex}) {
-            color
-            complementary_colors {
-               color
-            }
-          }
-        }
-      `,
-          variables: {
-            hex,
-          },
-        }),
-      })
-        .then((res) => res.json())
-        .then((res) => res.data),
-    {
-      onSuccess: (data) => {
-        queryClient.setQueryData(["data"], (oldData) => {
-          return { color: [...oldData.color, data.insert_color_one] };
-        });
-      },
-    }
-  );
-
+  const { mutate, isLoading, isSuccess } = useInsertColorOneMutation();
   const inputEl = React.useRef(null);
 
   React.useEffect(() => {
@@ -133,7 +102,7 @@ export default function HextInput() {
               <button
                 className="rounded bg-gray-900 h-12 align-center text-gray-200 px-10"
                 onClick={() => {
-                  mutate(hex);
+                  mutate({ hex });
                 }}
               >
                 Submit
