@@ -13,7 +13,7 @@ ReactDOM.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools initialIsOpen={false} />
-      <div className="bg-gray-800 h-screen">
+      <div className="bg-gray-800 min-h-screen">
         <div className="container max-w-5xl mx-auto">
           <App />
         </div>
